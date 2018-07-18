@@ -5,20 +5,20 @@ from slicer.ScriptedLoadableModule import *
 import logging
 
 #
-# SurfaceModel
+# CenterlineFromSurface
 #
 
-class SurfaceModel(ScriptedLoadableModule):
+class CenterlineFromSurface(ScriptedLoadableModule):
   """Uses ScriptedLoadableModule base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "SurfaceModel" # TODO make this more human readable by adding spaces
+    self.parent.title = "CenterlineFromSurface" # TODO make this more human readable by adding spaces
     self.parent.categories = ["ProjectWeek2018"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Michael Schumaker (Sunnybrook Research Institute), Eman Arnout (London Health Sciences Centre), Olga Trichtchenko (University of Western Ontario)"]
+    self.parent.contributors = ["Michael Schumaker (Sunnybrook Research Institute), Eman Arnout (London Health Sciences Centre), Olga Trichtchenko (University of Western Ontario)"] 
     self.parent.helpText = """
 This is an example of scripted loadable module bundled in an extension.
 It performs a simple thresholding on the input volume and optionally captures a screenshot.
@@ -30,10 +30,10 @@ and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR0132
 """ # replace with organization, grant and thanks.
 
 #
-# SurfaceModelWidget
+# CenterlineFromSurfaceWidget
 #
 
-class SurfaceModelWidget(ScriptedLoadableModuleWidget):
+class CenterlineFromSurfaceWidget(ScriptedLoadableModuleWidget):
   """Uses ScriptedLoadableModuleWidget base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
@@ -128,16 +128,16 @@ class SurfaceModelWidget(ScriptedLoadableModuleWidget):
     self.applyButton.enabled = self.inputSelector.currentNode() and self.outputSelector.currentNode()
 
   def onApplyButton(self):
-    logic = SurfaceModelLogic()
+    logic = CenterlineFromSurfaceLogic()
     enableScreenshotsFlag = self.enableScreenshotsFlagCheckBox.checked
     imageThreshold = self.imageThresholdSliderWidget.value
     logic.run(self.inputSelector.currentNode(), self.outputSelector.currentNode(), imageThreshold, enableScreenshotsFlag)
 
 #
-# SurfaceModelLogic
+# CenterlineFromSurfaceLogic
 #
 
-class SurfaceModelLogic(ScriptedLoadableModuleLogic):
+class CenterlineFromSurfaceLogic(ScriptedLoadableModuleLogic):
   """This class should implement all the actual
   computation done by your module.  The interface
   should be such that other python code can import
@@ -227,14 +227,14 @@ class SurfaceModelLogic(ScriptedLoadableModuleLogic):
 
     # Capture screenshot
     if enableScreenshots:
-      self.takeScreenshot('SurfaceModelTest-Start','MyScreenshot',-1)
+      self.takeScreenshot('CenterlineFromSurfaceTest-Start','MyScreenshot',-1)
 
     logging.info('Processing completed')
 
     return True
 
 
-class SurfaceModelTest(ScriptedLoadableModuleTest):
+class CenterlineFromSurfaceTest(ScriptedLoadableModuleTest):
   """
   This is the test case for your scripted module.
   Uses ScriptedLoadableModuleTest base class, available at:
@@ -250,9 +250,9 @@ class SurfaceModelTest(ScriptedLoadableModuleTest):
     """Run as few or as many tests as needed here.
     """
     self.setUp()
-    self.test_SurfaceModel1()
+    self.test_CenterlineFromSurface1()
 
-  def test_SurfaceModel1(self):
+  def test_CenterlineFromSurface1(self):
     """ Ideally you should have several levels of tests.  At the lowest level
     tests should exercise the functionality of the logic with different inputs
     (both valid and invalid).  At higher levels your tests should emulate the
@@ -284,6 +284,6 @@ class SurfaceModelTest(ScriptedLoadableModuleTest):
     self.delayDisplay('Finished with download and loading')
 
     volumeNode = slicer.util.getNode(pattern="FA")
-    logic = SurfaceModelLogic()
+    logic = CenterlineFromSurfaceLogic()
     self.assertIsNotNone( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')

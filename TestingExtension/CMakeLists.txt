@@ -5,7 +5,7 @@ project(TestingExtension)
 #-----------------------------------------------------------------------------
 # Extension meta-information
 set(EXTENSION_HOMEPAGE "http://slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/TestingExtension")
-set(EXTENSION_CATEGORY "Vascular")
+set(EXTENSION_CATEGORY "ProjectWeek2018")
 set(EXTENSION_CONTRIBUTORS "Michael Schumaker (Sunnybrook Research Institute), Eman Arnout (London Health Sciences Centre), Olga Trichtchenko (University of Western Ontario)")
 set(EXTENSION_DESCRIPTION "An extension to test different VMTK features")
 set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/TestingExtension.png")
@@ -20,6 +20,7 @@ include(${Slicer_USE_FILE})
 #-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(SurfaceModel)
+add_subdirectory(CenterlineFromSurface)
 ## NEXT_MODULE
 
 #-----------------------------------------------------------------------------
