@@ -1,7 +1,8 @@
 import os
 import unittest
-import vtk, qt, ctk, slicer
+import vtk, qt, ctk, slicer, numpy, math
 from slicer.ScriptedLoadableModule import *
+import vtkSegmentationCorePython as vtkSegmentationCore
 import logging
 
 #
@@ -70,7 +71,7 @@ class CenterlineFromSurfaceWidget(ScriptedLoadableModuleWidget):
 
         #A button to perform the desired action
         self.applyButton = qt.QPushButton("Run")
-        self.applyButton.enabled = True
+        self.applyButton.enabled = False
         self.layout.addWidget(self.addRow("Run: ", self.applyButton))
 
         self.layout.addStretch(1)
@@ -82,14 +83,15 @@ class CenterlineFromSurfaceWidget(ScriptedLoadableModuleWidget):
         
     def onSelect(self):
         """What to do when one of the nodes in the selector is changed."""
-        pass
+        self.applyButton.enabled = self.surfaceModelSelector.currentNode() and self.centerlineSelector.currentNode()
 
 
     def onApplyButton(self):
-        #self.logic
-        pass
-        print "Apply button clicked!!!"
-
+        """What action should be taken when the button is clicked?"""
+        if(self.surfaceModelSelector.currentNode() and self.centerlineSelector.currentNode()):
+            #Still need to do something about the start and end points
+            self.logic.GenerateCenterlineFromSurface(self.surfaceModelSelector.currentNode(), self.centerlineSelector.currentNode())
+    #end onApplyButton
 
         
     def addRow(self, pretext, newWidget):
@@ -116,10 +118,18 @@ class CenterlineFromSurfaceLogic(ScriptedLoadableModuleLogic):
     """This class should implement all the actual computation done by your module.  The interface should be such that other python code can import this class and make use of the functionality without requiring an instance of the Widget. Uses ScriptedLoadableModuleLogic base class, available at: https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py """
 
 
-    def GenerateCenterlineFromSurface(self):
+    def GenerateCenterlineFromSurface(self, surfaceModelNode, centerlineNode):
         """Do something to generate a centerline."""
-        pass
         print "GenerateCenterlineFromSurface has been called!"
+        #Try using VMTK Python classes directly. Do not use SlicerExtension-VMTK methods
+
+
+        #Do stuff!
+
+
+    #end GenerateCenterlineFromSurface
+
+
 
 #end CenterlineFromSurfaceLogic
 
