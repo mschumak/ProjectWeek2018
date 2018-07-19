@@ -1,0 +1,7 @@
+<Name>VmtkSlicerModule</Name>
+<Description>The Vascular Modeling Toolkit</Description>
+<SourceLocation>https://www.nitrc.org/svn/slicervmtklvlst/VmtkSlicerModule</SourceLocation>
+<HomePage>http://www.nitrc.org/projects/slicervmtklvlst/</HomePage>
+<Version>1.0</Version>
+<Author>Daniel Haehn</Author>
+<Acknowledgement>Luca Antiga, VMTK.org</Acknowledgement>
