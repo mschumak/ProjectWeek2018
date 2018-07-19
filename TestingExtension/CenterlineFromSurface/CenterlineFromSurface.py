@@ -133,28 +133,53 @@ class CenterlineFromSurfaceLogic(ScriptedLoadableModuleLogic):
             return None
 
         #Get the IDs of a source and a target point already in the model
-        sourceAndTargetReturn = self.GetSingleSourceAndTargetPoints(surfaceModelNode.GetID())
-        if(sourceAndTargetReturn is None):
+        sourceAndTargetListReturn = self.GetSingleSourceAndTargetPointsList(surfaceModelNode.GetID())
+        if(sourceAndTargetListReturn is None):
            print "Could not extract source and target points from model node in GenerateCenterlineFromSurface"
            return None
-        sourcePoint = sourceAndTargetReturn[0]
-        targetPoint = sourceAndTargetReturn[1]
-        print "sourcePoint={}, targetPoint={}".format(sourcePoint, targetPoint)
+        sourcePointList = sourceAndTargetListReturn[0]
+        targetPointList = sourceAndTargetListReturn[1]
+        print "sourcePointList={}, targetPointList={}".format(sourcePointList, targetPointList)
         
         #Attempt 1: do it the simple and inaccurate way by generating a network model
-        self.GenerateNetwork(surfaceModelNode, centerlineNode, sourcePoint)
-        
-
-
+        centerlinePolyData = self.GenerateNetwork(surfaceModelPolyData, sourcePointList)
+        if(centerlinePolyData is not None):
+            centerlineNode.SetAndObservePolyData(centerlinePolyData)
+        else:
+            print "Could not generate centerline in GenerateCenterlineFromSurface"
+            return
 
     #end GenerateCenterlineFromSurface
 
 
-    def GenerateNetwork(self, surfaceModelNode, centerlineNode, sourcePoint):
+    def GenerateNetwork(self, surfaceModelNode, sourcePointList):
         """Create a centerline the simple and inaccurate way - start at a single point, and let the network calculation find one or more end points."""
         print "Entered GenerateNetwork"
 
+        # import the vmtk libraries
+        try:
+            import vtkvmtkComputationalGeometryPython as vtkvmtkComputationalGeometry
+            import vtkvmtkMiscPython as vtkvmtkMisc
+        except ImportError:
+            print "Unable to import the SlicerVmtk libraries"
+            return None
 
+        radiusArrayName = 'Radius'
+        topologyArrayName = 'Topology'
+        marksArrayName = 'Marks'
+
+        networkExtraction = vtkvmtkMisc.vtkvmtkPolyDataNetworkExtraction()
+        networkExtraction.SetInputData(polyData)
+        networkExtraction.SetAdvancementRatio(1.05)
+        networkExtraction.SetRadiusArrayName(radiusArrayName)
+        networkExtraction.SetTopologyArrayName(topologyArrayName)
+        networkExtraction.SetMarksArrayName(marksArrayName)
+        networkExtraction.Update()
+
+        outPolyData = vtk.vtkPolyData()
+        outPolyData.DeepCopy(networkExtraction.GetOutput())
+
+        return outPolyData
     #end GenerateNetwork
 
 
