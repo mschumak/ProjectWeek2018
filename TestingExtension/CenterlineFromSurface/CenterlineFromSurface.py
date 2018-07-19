@@ -78,6 +78,8 @@ class CenterlineFromSurfaceWidget(ScriptedLoadableModuleWidget):
 
         #Connections
         self.applyButton.connect('clicked(bool)', self.onApplyButton)
+        self.surfaceModelSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
+        self.centerlineSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
     #end setup
         
         
@@ -123,11 +125,112 @@ class CenterlineFromSurfaceLogic(ScriptedLoadableModuleLogic):
         print "GenerateCenterlineFromSurface has been called!"
         #Try using VMTK Python classes directly. Do not use SlicerExtension-VMTK methods
 
+        #Type is vtkMRMLModelNode
+        try:
+            surfaceModelPolyData = surfaceModelNode.GetPolyData()
+        except (NameError, AttributeError):
+            print "Could not extract vtkPolyData from model node in GenerateCenterlineFromSurface"
+            return None
 
-        #Do stuff!
+        #Get the IDs of a source and a target point already in the model
+        sourceAndTargetReturn = self.GetSingleSourceAndTargetPoints(surfaceModelNode.GetID())
+        if(sourceAndTargetReturn is None):
+           print "Could not extract source and target points from model node in GenerateCenterlineFromSurface"
+           return None
+        sourcePoint = sourceAndTargetReturn[0]
+        targetPoint = sourceAndTargetReturn[1]
+        print "sourcePoint={}, targetPoint={}".format(sourcePoint, targetPoint)
+        
+        #Attempt 1: do it the simple and inaccurate way by generating a network model
+        self.GenerateNetwork(surfaceModelNode, centerlineNode, sourcePoint)
+        
+
 
 
     #end GenerateCenterlineFromSurface
+
+
+    def GenerateNetwork(self, surfaceModelNode, centerlineNode, sourcePoint):
+        """Create a centerline the simple and inaccurate way - start at a single point, and let the network calculation find one or more end points."""
+        print "Entered GenerateNetwork"
+
+
+    #end GenerateNetwork
+
+
+    def GetSingleSourceAndTargetPoints(self, modelNodeID):
+        """Use the method GetSingleSourceAndTargetPointsList to obtain the IDs of source and target points. Get the 3-element positions of those points, and return a 2-tuple containing the 3-element points. This method does not identify multiple target points. Returns None on error."""
+        #Type is vtkMRMLModelNode
+        try:
+            modelNode = slicer.util.getNode(modelNodeID)
+            modelPolyData = modelNode.GetPolyData()
+        except (NameError, AttributeError):
+            print "Could not extract vtkPolyData from model node in GetSingleSourceAndTargetPoints"
+            return None
+        #Call the method that actually finds the source and target points,
+        #and returns a list of the point IDs
+        listReturn = self.GetSingleSourceAndTargetPointsList(modelNodeID)
+        if(listReturn is None):
+           print "Could not extract source and target points from model node in GetSingleSourceAndTargetPoints"
+           return None
+        sourceIdList = listReturn[0]
+        targetIdList = listReturn[1]
+        try:
+            if((sourceIdList.GetNumberOfIds() == 0) or (targetIdList.GetNumberOfIds() == 0)):
+                raise ValueError("Could not extract source and target points from model node in GetSingleSourceAndTargetPoints")
+        except (AttributeError, IndexError, ValueError):
+            print "Could not extract source and target points from model node in GetSingleSourceAndTargetPoints"
+            return None
+        sourcePoint = [0,0,0]
+        targetPoint = [0,0,0]
+        modelPolyData.GetPoint(sourceIdList.GetId(0), sourcePoint)
+        modelPolyData.GetPoint(targetIdList.GetId(0), targetPoint)
+        return (sourcePoint, targetPoint)
+    #end GetSingleSourceAndTargetPoints
+
+    def GetSingleSourceAndTargetPointsList(self, modelNodeID):
+        """Start by getting the RAS bounds of the model. Get points at the min and max axial values. Find a point with the same axial value for each (min and max). This version of the method does not identify multiple target points. Returns None on error."""
+        #Type is vtkMRMLModelNode
+        try:
+            modelNode = slicer.util.getNode(modelNodeID)
+            modelPolyData = modelNode.GetPolyData()
+        except (NameError, AttributeError):
+            print "Could not extract vtkPolyData from model node in GetSingleSourceAndTargetPointsList"
+            return None
+        #Get the axial bounds of the model
+        RASBounds = [0,0,0,0,0,0]
+        modelNode.GetRASBounds(RASBounds)
+        minAxial = RASBounds[4]
+        maxAxial = RASBounds[5]
+
+        #Get the Ids of points that have axial values at the bounds
+        sourcePointFound = False
+        sourcePointId = -1
+        targetPointFound = False
+        targetPointId = -1
+        numPoints = modelPolyData.GetNumberOfPoints()
+        for ptId in range(numPoints):
+            pointPos = [0,0,0]
+            modelPolyData.GetPoint(ptId, pointPos)
+            if((pointPos[2] == maxAxial) and not sourcePointFound):
+                sourcePointFound = True
+                sourcePointId = ptId
+            elif((pointPos[2] == minAxial) and not targetPointFound):
+                targetPointFound = True
+                targetPointId = ptId
+            if(sourcePointFound and targetPointFound):
+                break
+        if((sourcePointId == -1) or (targetPointId == -1)):
+            print "Could not find source or target point in GetSingleSourceAndTargetPointsList"
+            return None
+
+        #Assign the point ids to vtkIdLists
+        sourceIdList = vtk.vtkIdList()
+        targetIdList = vtk.vtkIdList()
+        sourceIdList.InsertUniqueId(sourcePointId)
+        targetIdList.InsertUniqueId(targetPointId)
+        return (sourceIdList, targetIdList)
+    #end GetSingleSourceAndTargetPointsList
 
 
 
